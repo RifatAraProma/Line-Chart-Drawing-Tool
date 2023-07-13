@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Drawing Tool</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.1/svg.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <style>
+    #drawing-container {
+      border: 1px solid black;
+      width: 1000px;
+      height: 375px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="drawing-container"></div>
+  <button id="saveButton" onclick="saveData()" disabled>Save Data</button>
+  <div id="chart"></div>
+
+  <script>
+    // Create an SVG.js instance and attach it to the drawing container
+    const drawing = SVG().addTo('#drawing-container').size(1000, 375);
+
+    // Array to store the coordinates of the drawn lines
+    let drawingData = [];
+    let dataToSave = [];
+
+    // Flag to track when the user is drawing
+    let isDrawing = false;
+    // Event save drawing data as json
+    // Event handler for mouse down
+    const startDrawing = (event) => {
+      isDrawing = true;
+      const { offsetX, offsetY } = event;
+      drawingData.push([offsetX, offsetY]);
+    };
+
+    // Event handler for mouse move
+    const draw = (event) => {
+      if (!isDrawing) return;
+      const { offsetX, offsetY } = event;
+      drawingData.push([offsetX, offsetY]);
+      updateDrawing();
+    };
+
+    // Event handler for mouse up
+    const stopDrawing = () => {
+      isDrawing = false;
+      console.log(drawingData); // Extract values along the line here
+      document.getElementById('saveButton').disabled = false;
+      dataToSave = drawingData;
+      drawingData = []; // Clear the drawing data for the next drawing
+    };
+
+    // Function to update the drawing on the SVG canvas
+    const updateDrawing = () => {
+      drawing.clear(); // Clear the previous drawing
+
+      // Create a path string from the drawing data
+      const pathString = drawingData.reduce((path, [x, y], index) => {
+        if (index === 0) {
+          return `M${x},${y}`;
+        }
+        return `${path} L${x},${y}`;
+      }, '');
+
+      // Draw the path on the SVG canvas
+      drawing.path(pathString).fill('none').stroke('black');
+    };
+
+    const saveData = () => {
+      document.getElementById('saveButton').disabled = true;
+      // Convert the drawing data to JSON
+      const jsonData = JSON.stringify(dataToSave, null, 2);
+
+      // Create a new Blob object with the JSON data
+      const blob = new Blob([jsonData], { type: 'application/json' });
+
+      // Create a link element
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+
+      // Specify the file name
+      a.download = 'drawing_data.json';
+
+      // Append the link element to the document body
+      document.body.appendChild(a);
+
+      // Trigger a click event on the link element
+      a.click();
+
+      // Remove the link element from the document body
+      document.body.removeChild(a);
+    }
+
+    // Attach event handlers to the SVG container
+    const container = document.querySelector('#drawing-container');
+    container.addEventListener('mousedown', startDrawing);
+    container.addEventListener('mousemove', draw);
+    container.addEventListener('mouseup', stopDrawing);
+  </script>
+</body>
+
+</html>
