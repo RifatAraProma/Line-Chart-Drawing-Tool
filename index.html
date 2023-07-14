@@ -7,6 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
     #drawing-container {
       border: 1px solid black;
@@ -23,7 +24,7 @@
 
   <script>
     // Create an SVG.js instance and attach it to the drawing container
-    const drawing = SVG().addTo('#drawing-container').size(1000, 375);
+    const drawing = SVG().addTo('#drawing-container').size(1000, 375).id('chartSvg');
 
     // Array to store the coordinates of the drawn lines
     let drawingData = [];
@@ -94,6 +95,21 @@
       a.click();
 
       // Remove the link element from the document body
+      document.body.removeChild(a);
+      downloadSVG();
+    }
+
+    function downloadSVG() {
+      const svgElement = document.getElementById('chartSvg');
+      const svgCode = new XMLSerializer().serializeToString(svgElement);
+      const blob = new Blob([svgCode], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mySvg.svg';
+      document.body.appendChild(a);
+      a.click();
       document.body.removeChild(a);
     }
 
