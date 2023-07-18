@@ -118,6 +118,11 @@
     container.addEventListener('mousedown', startDrawing);
     container.addEventListener('mousemove', draw);
     container.addEventListener('mouseup', stopDrawing);
+
+    // Touch events
+    container.addEventListener('touchstart', startDrawing);
+    container.addEventListener('touchmove', draw);
+    container.addEventListener('touchend', stopDrawing);
   </script>
 </body>
 
