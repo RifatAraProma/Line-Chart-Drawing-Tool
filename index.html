@@ -32,23 +32,23 @@
 
     // Flag to track when the user is drawing
     let isDrawing = false;
-    // Event save drawing data as json
-    // Event handler for mouse down
+
+    // Event handler for mouse down and touch start
     const startDrawing = (event) => {
       isDrawing = true;
-      const { offsetX, offsetY } = event;
+      const { offsetX, offsetY } = getCoordinates(event);
       drawingData.push([offsetX, offsetY]);
     };
 
-    // Event handler for mouse move
+    // Event handler for mouse move and touch move
     const draw = (event) => {
       if (!isDrawing) return;
-      const { offsetX, offsetY } = event;
+      const { offsetX, offsetY } = getCoordinates(event);
       drawingData.push([offsetX, offsetY]);
       updateDrawing();
     };
 
-    // Event handler for mouse up
+    // Event handler for mouse up and touch end
     const stopDrawing = () => {
       isDrawing = false;
       console.log(drawingData); // Extract values along the line here
@@ -81,23 +81,33 @@
       // Create a new Blob object with the JSON data
       const blob = new Blob([jsonData], { type: 'application/json' });
 
-      // Create a link element
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
+      if (navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPhone/i)) {
+        // For iPad or iPhone, use the file-sharing method
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const url = event.target.result;
 
-      // Specify the file name
-      a.download = 'drawing_data.json';
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'drawing_data.json';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        };
+        reader.readAsDataURL(blob);
+      } else {
+        // For other devices, use the standard download method
+        const url = URL.createObjectURL(blob);
 
-      // Append the link element to the document body
-      document.body.appendChild(a);
-
-      // Trigger a click event on the link element
-      a.click();
-
-      // Remove the link element from the document body
-      document.body.removeChild(a);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'drawing_data.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
       downloadSVG();
-    }
+    };
 
     function downloadSVG() {
       const svgElement = document.getElementById('chartSvg');
@@ -111,6 +121,25 @@
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+    }
+
+    // Function to get the coordinates of the drawing based on the event type (mouse or touch)
+    function getCoordinates(event) {
+      let x, y;
+
+      if (event.touches && event.touches.length > 0) {
+        // Touch event
+        const touch = event.touches[0];
+        x = touch.clientX;
+        y = touch.clientY;
+      } else {
+        // Mouse event
+        x = event.clientX;
+        y = event.clientY;
+      }
+
+      // Return the coordinates
+      return { x, y };
     }
 
     // Attach event handlers to the SVG container
