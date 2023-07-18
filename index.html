@@ -8,6 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+
   <style>
     #drawing-container {
       border: 1px solid black;
@@ -95,71 +97,42 @@
 
     const saveData = () => {
       document.getElementById('saveButton').disabled = true;
+
       // Convert the drawing data to JSON
       const jsonData = JSON.stringify(dataToSave, null, 2);
 
-      // Create a new Blob object with the JSON data
-      const blob = new Blob([jsonData], { type: 'application/json' });
+      // Create a new Blob object for the SVG file
+      const svgCode = new XMLSerializer().serializeToString(document.getElementById('chartSvg'));
+      const svgBlob = new Blob([svgCode], { type: 'image/svg+xml' });
 
-      if (navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPhone/i)) {
-        // For iPad or iPhone, use the file-sharing method
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          const url = event.target.result;
+      // Create a new Blob object for the JSON file
+      const jsonBlob = new Blob([jsonData], { type: 'application/json' });
 
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'drawing_data.json';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        };
-        reader.readAsDataURL(blob);
-      } else {
-        // For other devices, use the standard download method
-        const url = URL.createObjectURL(blob);
+      // Create a new Zip Archive
+      const zip = new JSZip();
+      zip.file('drawing.svg', svgBlob);
+      zip.file('drawing.json', jsonBlob);
 
+      // Generate the zip file asynchronously
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        // Create a temporary URL for the Blob
+        const url = URL.createObjectURL(content);
+
+        // Create an anchor element
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'drawing_data.json';
-        document.body.appendChild(a);
+        a.download = 'drawing_data.zip';
+
+        // Programmatically trigger a click event on the anchor element to initiate the download
         a.click();
+
+        // Clean up the temporary URL and remove the anchor element
+        URL.revokeObjectURL(url);
         document.body.removeChild(a);
-      }
-      downloadSVG();
+      });
     };
 
-    function downloadSVG() {
-      const svgElement = document.getElementById('chartSvg');
-      const svgCode = new XMLSerializer().serializeToString(svgElement);
-      const blob = new Blob([svgCode], { type: 'image/svg+xml' });
 
-      if (navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPhone/i)) {
-        // For iPad or iPhone, use the file-sharing method
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          const url = event.target.result;
-
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'mySvg.svg';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        };
-        reader.readAsDataURL(blob);
-      } else {
-        // For other devices, use the standard download method
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'mySvg.svg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-    }
 
     // Attach event handlers to the SVG container
     const container = document.querySelector('#drawing-container');
