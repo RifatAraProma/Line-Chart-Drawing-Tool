@@ -35,6 +35,7 @@
 
     // Event handler for mouse down and touch start
     const startDrawing = (event) => {
+      event.preventDefault(); // Prevent default scrolling behavior
       isDrawing = true;
       const { x, y } = getCoordinates(event);
       drawingData.push([x, y]);
@@ -132,33 +133,32 @@
       const svgElement = document.getElementById('chartSvg');
       const svgCode = new XMLSerializer().serializeToString(svgElement);
       const blob = new Blob([svgCode], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
 
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'mySvg.svg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
+      if (navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPhone/i)) {
+        // For iPad or iPhone, use the file-sharing method
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const url = event.target.result;
 
-    // Function to get the coordinates of the drawing based on the event type (mouse or touch)
-    function getCoordinates(event) {
-      let x, y;
-
-      if (event.touches && event.touches.length > 0) {
-        // Touch event
-        const touch = event.touches[0];
-        x = touch.clientX;
-        y = touch.clientY;
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'mySvg.svg';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        };
+        reader.readAsDataURL(blob);
       } else {
-        // Mouse event
-        x = event.clientX;
-        y = event.clientY;
-      }
+        // For other devices, use the standard download method
+        const url = URL.createObjectURL(blob);
 
-      // Return the coordinates
-      return { x, y };
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'mySvg.svg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
     }
 
     // Attach event handlers to the SVG container
