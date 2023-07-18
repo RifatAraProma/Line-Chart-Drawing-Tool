@@ -36,17 +36,36 @@
     // Event handler for mouse down and touch start
     const startDrawing = (event) => {
       isDrawing = true;
-      const { offsetX, offsetY } = getCoordinates(event);
-      drawingData.push([offsetX, offsetY]);
+      const { x, y } = getCoordinates(event);
+      drawingData.push([x, y]);
     };
 
     // Event handler for mouse move and touch move
     const draw = (event) => {
       if (!isDrawing) return;
-      const { offsetX, offsetY } = getCoordinates(event);
-      drawingData.push([offsetX, offsetY]);
+      const { x, y } = getCoordinates(event);
+      drawingData.push([x, y]);
       updateDrawing();
     };
+
+    // Function to get the coordinates of the drawing based on the event type (mouse or touch)
+    function getCoordinates(event) {
+      let x, y;
+
+      if (event.touches && event.touches.length > 0) {
+        // Touch event
+        const touch = event.touches[0];
+        x = touch.clientX;
+        y = touch.clientY;
+      } else {
+        // Mouse event
+        x = event.clientX;
+        y = event.clientY;
+      }
+
+      // Return the coordinates
+      return { x, y };
+    }
 
     // Event handler for mouse up and touch end
     const stopDrawing = () => {
