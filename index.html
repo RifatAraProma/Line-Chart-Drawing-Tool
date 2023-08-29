@@ -23,9 +23,13 @@
   <div id="drawing-container"></div>
   <button id="saveButton" onclick="saveData()" disabled>Save Data</button>
   <div id="chart"></div>
+  <p id="height"> </p>
+   <script>
+      document.getElementById("height").innerHTML =
+      "Screen heigth is " + screen.height;
+   </script>
 
   <script>
-    console.log(screen.width)
     // ... (other code remains unchanged)
 
     let savedFilesCount = 0; // Counter for saved files
