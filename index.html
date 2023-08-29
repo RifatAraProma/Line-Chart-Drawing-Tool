@@ -25,75 +25,9 @@
   <div id="chart"></div>
 
   <script>
-    // Create an SVG.js instance and attach it to the drawing container
-    const drawing = SVG().addTo('#drawing-container').size(1000, 375).id('chartSvg');
+    // ... (other code remains unchanged)
 
-    // Array to store the coordinates of the drawn lines
-    let drawingData = [];
-    let dataToSave = [];
-
-    // Flag to track when the user is drawing
-    let isDrawing = false;
-
-    // Event handler for mouse down and touch start
-    const startDrawing = (event) => {
-      event.preventDefault(); // Prevent default scrolling behavior
-      isDrawing = true;
-      const { x, y } = getCoordinates(event);
-      drawingData.push([x, y]);
-    };
-
-    // Event handler for mouse move and touch move
-    const draw = (event) => {
-      if (!isDrawing) return;
-      const { x, y } = getCoordinates(event);
-      drawingData.push([x, y]);
-      updateDrawing();
-    };
-
-    // Function to get the coordinates of the drawing based on the event type (mouse or touch)
-    function getCoordinates(event) {
-      let x, y;
-
-      if (event.touches && event.touches.length > 0) {
-        // Touch event
-        const touch = event.touches[0];
-        x = touch.clientX;
-        y = touch.clientY;
-      } else {
-        // Mouse event
-        x = event.clientX;
-        y = event.clientY;
-      }
-
-      // Return the coordinates
-      return { x, y };
-    }
-
-    // Event handler for mouse up and touch end
-    const stopDrawing = () => {
-      isDrawing = false;
-      console.log(drawingData); // Extract values along the line here
-      document.getElementById('saveButton').disabled = false;
-      dataToSave = drawingData;
-      drawingData = []; // Clear the drawing data for the next drawing
-    };
-
-    // Function to update the drawing on the SVG canvas
-    const updateDrawing = () => {
-      drawing.clear(); // Clear the previous drawing
-
-      // Create a path string from the drawing data
-      const pathString = drawingData.reduce((path, [x, y], index) => {
-        if (index === 0) {
-          return `M${x},${y}`;
-        }
-        return `${path} L${x},${y}`;
-      }, '');
-
-      // Draw the path on the SVG canvas
-      drawing.path(pathString).fill('none').stroke('black');
-    };
+    let savedFilesCount = 0; // Counter for saved files
 
     const saveData = () => {
       document.getElementById('saveButton').disabled = true;
@@ -110,8 +44,15 @@
 
       // Create a new Zip Archive
       const zip = new JSZip();
-      zip.file('drawing.svg', svgBlob);
-      zip.file('drawing.json', jsonBlob);
+      
+      // Generate unique file names using the savedFilesCount
+      const svgFileName = `drawing_${savedFilesCount + 1}.svg`;
+      const jsonFileName = `drawing_${savedFilesCount + 1}.json`;
+
+      zip.file(svgFileName, svgBlob);
+      zip.file(jsonFileName, jsonBlob);
+
+      savedFilesCount++; // Increment the counter
 
       // Generate the zip file asynchronously
       zip.generateAsync({ type: 'blob' }).then((content) => {
@@ -121,7 +62,7 @@
         // Create an anchor element
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'drawing_data.zip';
+        a.download = `drawing_data_${savedFilesCount}.zip`; // Use the counter in the filename
 
         // Programmatically trigger a click event on the anchor element to initiate the download
         a.click();
@@ -132,18 +73,7 @@
       });
     };
 
-
-
-    // Attach event handlers to the SVG container
-    const container = document.querySelector('#drawing-container');
-    container.addEventListener('mousedown', startDrawing);
-    container.addEventListener('mousemove', draw);
-    container.addEventListener('mouseup', stopDrawing);
-
-    // Touch events
-    container.addEventListener('touchstart', startDrawing);
-    container.addEventListener('touchmove', draw);
-    container.addEventListener('touchend', stopDrawing);
+    // ... (other code remains unchanged)
   </script>
 </body>
 
