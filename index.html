@@ -13,8 +13,8 @@
   <style>
     #drawing-container {
       border: 1px solid black;
-      width: 1000px;
-      height: 375px;
+      width: 800px;
+      height: 450px;
     }
   </style>
 </head>
@@ -23,10 +23,17 @@
   <div id="drawing-container"></div>
   <button id="saveButton" onclick="saveData()" disabled>Save Data</button>
   <div id="chart"></div>
+  <p id="height"> </p>
+  <p id="width"> </p>
 
   <script>
+    document.getElementById("height").innerHTML =
+    "Screen heigth is " + screen.height;
+    document.getElementById("width").innerHTML =
+    "Screen width is " + screen.width;
+
     // Create an SVG.js instance and attach it to the drawing container
-    const drawing = SVG().addTo('#drawing-container').size(1000, 375).id('chartSvg');
+    const drawing = SVG().addTo('#drawing-container').size(800, 450).id('chartSvg');
 
     // Array to store the coordinates of the drawn lines
     let drawingData = [];
