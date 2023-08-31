@@ -22,22 +22,27 @@
 <body>
   <div id="drawing-container"></div>
   <button id="saveButton" onclick="saveData()" disabled>Save Data</button>
+  <button id="resetButton" onclick="cleanSlate()">Reset</button>
+  <button id="downloadButton" onclick="download()">Download</button>
   <div id="chart"></div>
   <p id="height"> </p>
   <p id="width"> </p>
 
   <script>
     document.getElementById("height").innerHTML =
-    "Screen heigth is " + screen.height;
+      "Screen heigth is " + screen.height;
     document.getElementById("width").innerHTML =
-    "Screen width is " + screen.width;
+      "Screen width is " + screen.width;
 
     // Create an SVG.js instance and attach it to the drawing container
     const drawing = SVG().addTo('#drawing-container').size(950, 375).id('chartSvg');
+    // Create a new Zip Archive
+    const zip = new JSZip();
 
     // Array to store the coordinates of the drawn lines
     let drawingData = [];
     let dataToSave = [];
+    let counter = 0;
 
     // Flag to track when the user is drawing
     let isDrawing = false;
@@ -102,8 +107,14 @@
       drawing.path(pathString).fill('none').stroke('black');
     };
 
+
+    const cleanSlate = () => {
+      drawing.clear();
+    }
+
     const saveData = () => {
       document.getElementById('saveButton').disabled = true;
+      counter++;
 
       // Convert the drawing data to JSON
       const jsonData = JSON.stringify(dataToSave, null, 2);
@@ -115,11 +126,13 @@
       // Create a new Blob object for the JSON file
       const jsonBlob = new Blob([jsonData], { type: 'application/json' });
 
-      // Create a new Zip Archive
-      const zip = new JSZip();
-      zip.file('drawing.svg', svgBlob);
-      zip.file('drawing.json', jsonBlob);
 
+      zip.file('drawing' + counter + '.svg', svgBlob);
+      zip.file('drawing' + counter + '.json', jsonBlob);
+      cleanSlate();
+    };
+
+    const download = () => {
       // Generate the zip file asynchronously
       zip.generateAsync({ type: 'blob' }).then((content) => {
         // Create a temporary URL for the Blob
@@ -137,7 +150,7 @@
         URL.revokeObjectURL(url);
         document.body.removeChild(a);
       });
-    };
+    }
 
 
 
